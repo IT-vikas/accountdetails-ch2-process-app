@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:redis="http://www.mulesoft.org/schema/mule/redis" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/redis http://www.mulesoft.org/schema/mule/redis/current/mule-redis.xsd">
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="1700330d-bc43-4e66-90a0-589c509fe27c" >
+		<http:request-connection host="accnt-sys-ch2-app-qw4jpc.internal-adljy5.usa-e2.cloudhub.io"/>
+	</http:request-config>
+	<sub-flow name="cloudhub2-prc-app-commonSub_Flow" doc:id="0feed10f-9ab8-4fe6-b80f-43e18acd64cd" >
+		<try doc:name="Try" doc:id="1c118534-4b2c-4323-9d1a-5c7cf9e449bd" >
+			<http:request method="#[vars.method]" doc:name="Request" doc:id="70f94f6a-f2a3-458d-accc-5b7f11938bb3" config-ref="HTTP_Request_configuration" path="#[vars.path]">
+				<http:query-params ><![CDATA[#[output application/java
+---
+{
+	("id" : vars.id)if(!isEmpty(vars.id))
+}]]]></http:query-params>
+			</http:request>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="ce3cbc28-ef42-4091-9fe6-6a37ebb41837" type="HTTP:BAD_GATEWAY, HTTP:CONNECTIVITY">
+					<logger level="INFO" doc:name="Logger" doc:id="9d7c308a-2241-447c-a46b-312372a48b4d" message="ERROR PROPOGATE"/>
+				</on-error-propagate>
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="a91ec69e-dc6f-4b2f-b538-678691101aa9" >
+					<ee:transform doc:name="Transform Message" doc:id="6616bd11-e419-4d4f-88df-1c9fa587118d" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"error": error.errorMessage.payload
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-continue>
+			</error-handler>
+		</try>
+		<logger level="INFO" doc:name="Logger" doc:id="89bd8328-5f63-4eb5-8017-7e6c34da2962" message="actualPayload #[payload]"/>
+		<choice doc:name="Choice" doc:id="0ee83945-cfec-4738-b361-ee2cba2b380a" >
+			<when expression='#[vars.method == "GET"]'>
+				<logger level="INFO" doc:name="Logger" doc:id="2ce4263c-31fe-4c03-83d4-b63d34cf1e04" message="method: #[vars.method]"/>
+				<ee:transform doc:name="Transform Message" doc:id="05eb95ca-315b-4ee7-bc1e-7f32df48fe41">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+[payload[0] -- "Id": null]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="bd2b4f38-8b09-41d5-854c-d01816fced42" message="payloadValue: #[payload] &amp;&amp;&amp; #[!isEmpty(payload) and !isEmpty(payload[0].Id__c)]"/>
+				<async doc:name="Async" doc:id="dee159eb-e402-48e8-be83-d5908fddd16e">
+					<choice doc:name="Choice" doc:id="9b0f6176-846f-4353-8078-43c69d1d37bb">
+				<when expression="#[!isEmpty(payload) and !isEmpty(payload[0].Id__c)]">
+					<redis:set doc:name="Set" doc:id="4d9fb82d-ca94-48dd-aba4-560563fc9da6" config-ref="Redis_Redis" key='#[vars.key]'>
+						<redis:value><![CDATA[#[%dw 2.0
+
+output application/java
+
+---
+
+write(payload, "application/json")]]]></redis:value>
+					</redis:set>
+					<logger level="INFO" doc:name="Logger" doc:id="56163e5f-8c0e-4f1e-b61d-c99cccca77a6" message="queue successsfull" />
+				</when>
+				<otherwise>
+					<logger level="INFO" doc:name="Logger" doc:id="262ae449-d141-4483-bc82-a335667c8f55" message="setting redis failed" />
+				</otherwise>
+			</choice>
+		</async>
+			</when>
+		</choice>
+	</sub-flow>
+	<sub-flow name="post_cloudhub2-prc-app-commonSub_Flow" doc:id="7061e40f-752e-43e0-988a-4c5ab112b1a8" >
+		<try doc:name="Try" doc:id="257c59b8-1b97-40e0-baf7-17f89a49572a" >
+			<http:request method="#[vars.method]" doc:name="Request" doc:id="7257566a-a629-41d5-aa30-9e259f39fabf" config-ref="HTTP_Request_configuration" path="#[vars.path]"/>
+			<logger level="INFO" doc:name="Logger" doc:id="97ec53e9-882c-4a6a-b40e-c63e2c2da664" message="actualResponse  #[payload]"/>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2e0e4e29-92e9-485b-b606-1e8d5f09a85f" type="HTTP:BAD_GATEWAY, HTTP:CONNECTIVITY" >
+					<logger level="INFO" doc:name="Logger" doc:id="685362d8-34e7-4a0b-815b-1e56db5774fe" message="ERROR PROPOGATE" />
+				</on-error-propagate>
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="81a628ba-68be-45b4-a794-ff44dc4eff7d" >
+					<ee:transform doc:name="Transform Message" doc:id="a5d3e01a-707c-4241-8505-124ecea60dcd" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"error": error.errorMessage.payload
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<logger level="INFO" doc:name="Logger" doc:id="bd68f104-3f84-4ca5-8e3d-fa39609ab5ad" message="#[payload]"/>
+				</on-error-continue>
+			</error-handler>
+		</try>
+	</sub-flow>
+</mule>

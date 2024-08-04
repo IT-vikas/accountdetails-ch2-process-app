@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_0feed10f_9ab8_4fe6_b80f_43e18acd64cd_Output_Variables_id = Number
+

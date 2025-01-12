@@ -56,12 +56,12 @@
 	</build>
 	<distributionManagement>
 		<repository>
-			<id>ch2-connected-app</id>
+			<id>anypoint-exchange-v3</id>
 			<name>Corporate Repository</name>
-			<url>https://maven.anypoint.mulesoft.com/api/v2/organizations/acbc968c-098c-4b16-951f-9c13718264ba/maven
-			</url>
+			<url>https://maven.anypoint.mulesoft.com/api/v2/organizations/acbc968c-098c-4b16-951f-9c13718264ba/maven</url>
 			<layout>default</layout>
 		</repository>
+
 	</distributionManagement>
 
 	<dependencies>
@@ -83,6 +83,7 @@
 			<version>1.0.0</version>
 			<classifier>raml</classifier>
 			<type>zip</type>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mule.modules</groupId>
@@ -107,7 +108,13 @@
 	<repositories>
 		<repository>
 			<id>anypoint-exchange-v3</id>
-			<name>Anypoint Exchange</name>
+			<name>Corporate Repository</name>
+			<url>https://maven.anypoint.mulesoft.com/api/v2/organizations/acbc968c-098c-4b16-951f-9c13718264ba/maven</url>
+			<layout>default</layout>
+		</repository>
+		<repository>
+			<id>anypoint-exchange-v3</id>
+			<name>Anypoint Exchange V3</name>
 			<url>https://maven.anypoint.mulesoft.com/api/v3/maven</url>
 			<layout>default</layout>
 		</repository>

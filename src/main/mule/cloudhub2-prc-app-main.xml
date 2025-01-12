@@ -123,32 +123,35 @@ attributes.queryParams.id as String default "0"]]></ee:set-variable>
 		<set-variable value='#["sfdcResp_" ++ vars.id]' doc:name="key" doc:id="38c627ac-fe6d-4eb3-8df6-8f48d5533f33" variableName="key"/>
 		<redis:get doc:name="Get" doc:id="6a3e200d-e16c-4dcf-8e8a-5b097e2e74f8" config-ref="Redis_Redis" key='#[vars.key]'/>
 		<logger level="INFO" doc:name="Logger" doc:id="fa42d57f-5931-4edb-b30f-03c079466fbe" message='actual payload - #[payload]  #[typeOf(payload)] keyVlaue:  #[vars.key]'/>
-		<choice doc:name="Choice" doc:id="dc9c7d8c-bd40-4845-a457-65c35bc01802" >
-			<when expression="#[!isEmpty(payload)]">
-				<ee:transform doc:name="Transform Message" doc:id="b1bfddd9-b3d5-4061-a5fb-e1ac3d31d648">
-			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-
-output application/json
-
----
-
-read(payload,"application/json")]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-				<ee:transform doc:name="Transform Message" doc:id="4c57e115-ee81-40db-8545-3711f703615c" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-payload]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-			</when>
-			<otherwise >
-				<flow-ref doc:name="Flow Reference" doc:id="11e4bcaf-1ffe-460c-b965-5e201dcf73c6" name="cloudhub2-prc-app-commonSub_Flow" />
-			</otherwise>
-		</choice>
+        <choice doc:name="Choice" doc:id="dc9c7d8c-bd40-4845-a457-65c35bc01802" >
+            <when expression="#[!isEmpty(payload)]">
+                <ee:transform doc:name="Transform Message" doc:id="b1bfddd9-b3d5-4061-a5fb-e1ac3d31d648">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+    
+    output application/json
+    
+    ---
+    
+    read(payload,"application/json")]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+                <ee:transform doc:name="Transform Message" doc:id="4c57e115-ee81-40db-8545-3711f703615c" >
+                    <ee:message >
+                        <ee:set-payload ><![CDATA[%dw 2.0
+    output application/json
+    ---
+    payload]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+            </when>
+            <when expression="1 == 1">
+                <logger level="INFO" doc:name="Cache Success Logger" doc:id="4fcd03b9-be94-49a9-bd04-d33ac6fb3d11" message="The data from cache fetched successfully"/>
+            </when>
+            <otherwise >
+                <flow-ref doc:name="Flow Reference" doc:id="11e4bcaf-1ffe-460c-b965-5e201dcf73c6" name="cloudhub2-prc-app-commonSub_Flow" />
+            </otherwise>
+        </choice>
     </flow>
     <flow name="post:\accountsDetails:application\json:cloudhub2-prc-app-config">
 		<ee:transform doc:name="Transform Message" doc:id="3136fe22-0ef3-43f4-bd4e-078ea382ce02" >

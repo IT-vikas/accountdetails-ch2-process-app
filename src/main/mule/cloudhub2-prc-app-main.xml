@@ -152,6 +152,7 @@ attributes.queryParams.id as String default "0"]]></ee:set-variable>
                 <flow-ref doc:name="Flow Reference" doc:id="11e4bcaf-1ffe-460c-b965-5e201dcf73c6" name="cloudhub2-prc-app-commonSub_Flow" />
             </otherwise>
         </choice>
+        <logger level="INFO" doc:name="Data Fetch Logger" doc:id="6ea8c85a-9dc0-49e2-b03f-c4a5ea45ef52" message="Data fetched successfully"/>
     </flow>
     <flow name="post:\accountsDetails:application\json:cloudhub2-prc-app-config">
 		<ee:transform doc:name="Transform Message" doc:id="3136fe22-0ef3-43f4-bd4e-078ea382ce02" >
